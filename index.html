@@ -261,7 +261,6 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
       <div class="listen-col-label">한국어 뜻</div>
     </div>
     <div class="listen-choices" id="listenChoices"></div>
-    <button class="listen-submit" id="listenSubmitBtn" onclick="submitListen()">정답 확인</button>
     <div class="listen-result" id="listenResult"></div>
     <div class="listen-nav">
       <button class="btn-nav" onclick="listenPrev()">←</button>
@@ -666,8 +665,9 @@ function selectListenChoice(btn, type) {
   if (type === 'spell') listenSpellSelected = btn.dataset.value;
   else listenMeanSelected = btn.dataset.value;
   
+  // 둘 다 선택되면 바로 자동 채점
   if (listenSpellSelected && listenMeanSelected) {
-    document.getElementById('listenSubmitBtn').classList.add('show');
+    submitListen();
   }
 }
 
@@ -679,7 +679,6 @@ function submitListen() {
   const meanOk = listenMeanSelected === w.meaning;
   const allOk = spellOk && meanOk;
   
-  // 색상 표시
   const container = document.getElementById('listenChoices');
   container.children[0].querySelectorAll('.listen-choice-btn').forEach(b => {
     if (b.dataset.value === w.word) b.classList.add('correct');
@@ -693,7 +692,6 @@ function submitListen() {
   document.getElementById('listenResult').textContent = allOk ? '✅ 완벽해요!' : spellOk ? '🔤 스펠링은 맞았어요!' : meanOk ? '📖 뜻은 맞았어요!' : '❌ 다시 도전해봐요!';
   document.getElementById('listenResult').style.color = allOk ? '#4CAF50' : '#f44336';
   if (allOk) addStreak(); else resetStreak();
-  document.getElementById('listenSubmitBtn').classList.remove('show');
 }
 
 function listenNext() { listenIndex=(listenIndex+1)%listenWords.length; renderListen(); }
@@ -837,27 +835,48 @@ function toggleTestSpeak(answer, meaning) {
   btn.textContent = '⏹️';
   document.getElementById('testSpeakResult').textContent = '듣는 중...';
   
+  let testResultReceived = false;
+
   testRecognition.onresult = (e) => {
-    const said = e.results[0][0].transcript.toLowerCase().trim();
+    testResultReceived = true;
+    let said = e.results[0][0].transcript.toLowerCase().trim();
     const ans = answer.toLowerCase().trim();
+    for (let i=0; i<e.results[0].length; i++) {
+      const t = e.results[0][i].transcript.toLowerCase().trim();
+      if (t.includes(ans) || ans.includes(t)) { said = t; break; }
+    }
     testIsRecording = false;
     btn.classList.remove('recording');
-    btn.textContent = '➡️ 다음';
     testAnswered = true;
-    
-    const correct = said === ans || said.includes(ans) || ans.includes(said);
-    if (correct) { testCorrect++; document.getElementById('testSpeakResult').textContent = `✅ 정답! "${said}"`; document.getElementById('testSpeakResult').style.color='#4CAF50'; }
-    else { document.getElementById('testSpeakResult').textContent = `❌ "${said}" → 정답: ${answer}`; document.getElementById('testSpeakResult').style.color='#f44336'; }
-    
-    document.getElementById('testScore').textContent = `${Math.round(testCorrect/(testCurrentQ+1)*100)}점`;
+    const correct = said===ans || said.includes(ans) || ans.includes(said) || levenshtein(said,ans)<=2;
+    if (correct) {
+      testCorrect++;
+      document.getElementById('testSpeakResult').textContent = '✅ 정답! "' + said + '"';
+      document.getElementById('testSpeakResult').style.color = '#4CAF50';
+    } else {
+      document.getElementById('testSpeakResult').textContent = '❌ "' + said + '" → 정답: ' + answer;
+      document.getElementById('testSpeakResult').style.color = '#f44336';
+    }
+    document.getElementById('testScore').textContent = Math.round(testCorrect/(testCurrentQ+1)*100) + '점';
     setTimeout(nextTestQuestion, 1500);
   };
-  testRecognition.onerror = () => {
+  testRecognition.onspeechend = () => { testRecognition.stop(); };
+  testRecognition.onend = () => {
     testIsRecording = false;
     btn.classList.remove('recording');
     btn.textContent = '🎤';
-    document.getElementById('testSpeakResult').textContent = '다시 눌러보세요';
+    if (!testResultReceived && !testAnswered) {
+      document.getElementById('testSpeakResult').textContent = '❓ 인식 실패 - 다시 눌러보세요';
+    }
   };
+  testRecognition.onerror = (e) => {
+    testIsRecording = false;
+    btn.classList.remove('recording');
+    btn.textContent = '🎤';
+    const msgs = {'no-speech':'말소리를 못 들었어요','not-allowed':'마이크 권한을 허용해주세요','network':'네트워크 오류'};
+    document.getElementById('testSpeakResult').textContent = msgs[e.error] || '오류: ' + e.error;
+  };
+  testRecognition.maxAlternatives = 3;
   testRecognition.start();
 }
 
@@ -884,7 +903,7 @@ function renderTestListening(w, area) {
       <div style="display:flex;flex-direction:column;gap:8px">${spellBtns}</div>
       <div style="display:flex;flex-direction:column;gap:8px">${meanBtns}</div>
     </div>
-    <button class="listen-submit" id="testListenSubmit" onclick="submitTestListen('${w.word}','${w.meaning}')">정답 확인</button>
+    <button class="listen-submit" id="testListenSubmit" onclick="submitTestListen()">정답 확인</button>
     <div class="listen-result" id="testListenResult"></div>`;
   
   setTimeout(() => speakText(w.word,'en-US'), 300);
@@ -898,12 +917,16 @@ function selectTestListen(btn, type) {
   btn.classList.add('selected');
   if (type==='spell') testSpellSel = btn.dataset.value;
   else testMeanSel = btn.dataset.value;
-  if (testSpellSel && testMeanSel) document.getElementById('testListenSubmit').classList.add('show');
+  // 둘 다 선택되면 바로 자동 채점
+  if (testSpellSel && testMeanSel) submitTestListen();
 }
 
-function submitTestListen(word, meaning) {
+function submitTestListen() {
   if (testAnswered) return;
   testAnswered = true;
+  const q = testQuestions[testCurrentQ];
+  const word = q.word.word;
+  const meaning = q.word.meaning;
   const allOk = testSpellSel===word && testMeanSel===meaning;
   if (allOk) testCorrect++;
   
@@ -919,7 +942,6 @@ function submitTestListen(word, meaning) {
   
   document.getElementById('testListenResult').textContent = allOk ? '✅ 완벽!' : '❌ 정답을 확인하세요';
   document.getElementById('testListenResult').style.color = allOk ? '#4CAF50' : '#f44336';
-  document.getElementById('testListenSubmit').classList.remove('show');
   document.getElementById('testScore').textContent = `${Math.round(testCorrect/(testCurrentQ+1)*100)}점`;
   setTimeout(nextTestQuestion, 1500);
 }
