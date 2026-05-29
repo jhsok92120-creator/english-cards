@@ -1,10 +1,19 @@
-const CACHE = 'vocab-v2';
-const OFFLINE_URLS = ['/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'vocab-v3';
+const BASE = '/english-cards';
+const OFFLINE_URLS = [
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/icon-192.png',
+  BASE + '/icon-512.png',
+];
 
 // 설치
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(OFFLINE_URLS)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(c => c.addAll(OFFLINE_URLS))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -19,19 +28,9 @@ self.addEventListener('activate', e => {
 
 // fetch - 네트워크 우선, 실패 시 캐시
 self.addEventListener('fetch', e => {
-  // POST나 외부 API는 캐시 안 함
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('api.anthropic.com')) return;
-  if (e.request.url.includes('fonts.googleapis.com') || e.request.url.includes('fonts.gstatic.com')) {
-    e.respondWith(
-      caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      }))
-    );
-    return;
-  }
+
   e.respondWith(
     fetch(e.request)
       .then(res => {
@@ -41,6 +40,8 @@ self.addEventListener('fetch', e => {
         }
         return res;
       })
-      .catch(() => caches.match(e.request).then(cached => cached || caches.match('/index.html')))
+      .catch(() => caches.match(e.request)
+        .then(cached => cached || caches.match(BASE + '/index.html'))
+      )
   );
 });

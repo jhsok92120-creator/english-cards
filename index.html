@@ -6,14 +6,14 @@
 <title>영단어 카드</title>
 
 <!-- PWA -->
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="/english-cards/manifest.json">
 <meta name="theme-color" content="#FF6B6B">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="영단어 카드">
-<link rel="apple-touch-icon" href="/icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/english-cards/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/english-cards/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1963,7 +1963,7 @@ document.getElementById('modalOverlay').addEventListener('click',function(e){if(
 // ===== 서비스워커 등록 (PWA) =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/english-cards/sw.js')
       .then(reg => console.log('SW 등록됨:', reg.scope))
       .catch(err => console.warn('SW:', err));
   });
