@@ -20,26 +20,91 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
 .streak-badge{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-100px);background:linear-gradient(135deg,#FF6B6B,#ff8e8e);color:#fff;padding:10px 24px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;box-shadow:0 4px 20px rgba(255,107,107,0.4);z-index:9999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;white-space:nowrap}
 .streak-badge.show{transform:translateX(-50%) translateY(0)}
 
+/* ===== 스타트 화면 ===== */
+.start-screen { width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; gap:20px; min-height:300px; }
+.start-mode-icon { font-size:5rem; animation: bounce 1.5s infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+.start-mode-title { font-family:'Gaegu',cursive; font-size:2.2rem; color:var(--dark); font-weight:700; }
+.start-mode-desc { font-size:0.88rem; color:#aaa; font-weight:700; text-align:center; line-height:1.7; }
+.btn-start { background:linear-gradient(135deg,var(--primary),#ff8e8e); color:#fff; border:none; border-radius:50px; padding:18px 52px; font-family:'Nunito',sans-serif; font-weight:900; font-size:1.2rem; cursor:pointer; box-shadow:0 6px 24px rgba(255,107,107,0.4); transition:all 0.15s; letter-spacing:1px; position:relative; overflow:hidden; }
+.btn-start:active { transform:scale(0.94); box-shadow:0 2px 10px rgba(255,107,107,0.3); }
+.btn-start::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.15); border-radius:50px; opacity:0; transition:opacity 0.2s; }
+.btn-start:hover::after { opacity:1; }
+.start-word-count { background:#fff; border-radius:50px; padding:8px 20px; font-size:0.8rem; font-weight:800; color:#aaa; box-shadow:var(--shadow); }
+
 /* ===== 레벨 맵 화면 ===== */
-#levelMapScreen{width:100%;max-width:480px;padding:0 0 80px}
-.app-header{text-align:center;padding:24px 16px 16px;position:sticky;top:0;background:var(--bg);z-index:100}
-.app-title{font-family:'Gaegu',cursive;font-size:2rem;color:var(--dark)}
-.app-title span{color:var(--primary)}
-.app-subtitle{font-size:0.8rem;color:#aaa;font-weight:700;margin-top:2px}
-.progress-wrap{padding:0 16px;margin-bottom:16px}
-.progress-info{display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:#aaa;margin-bottom:6px}
-.progress-bar-bg{width:100%;height:8px;background:#eee;border-radius:50px;overflow:hidden}
-.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:50px;transition:width 0.5s}
-.level-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:0 16px}
-.level-btn{aspect-ratio:1;border-radius:14px;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.75rem;transition:all 0.2s;position:relative}
-.level-btn.locked{background:#f0f0f0;color:#ccc;cursor:default}
-.level-btn.unlocked{background:#fff;color:var(--dark);box-shadow:var(--shadow);border:2px solid var(--secondary)}
-.level-btn.unlocked:active{transform:scale(0.95)}
-.level-btn.current{background:linear-gradient(135deg,var(--primary),#ff8e8e);color:#fff;box-shadow:0 4px 15px rgba(255,107,107,0.4);border:none}
-.level-btn.completed{background:linear-gradient(135deg,var(--secondary),#44c4b8);color:#fff;border:none}
-.level-btn .stars{font-size:0.6rem;letter-spacing:-1px}
-.level-btn .lock-icon{font-size:1.2rem}
-.level-num{font-size:0.85rem;font-weight:900}
+#levelMapScreen{width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;align-items:center;background:var(--bg)}
+
+.app-header{text-align:center;padding:24px 0 0;width:100%}
+.app-header-card{background:linear-gradient(135deg,#2C2C54,#3d3d7a);border-radius:24px 24px 0 0;margin:0 16px 0;padding:24px 20px 20px;box-shadow:0 4px 0 rgba(44,44,84,0.1);position:relative;overflow:hidden}
+.app-header-card::before{content:'⭐';position:absolute;top:-8px;right:16px;font-size:5rem;opacity:0.06}
+.app-header-card::after{content:'🎮';position:absolute;bottom:-10px;left:10px;font-size:4rem;opacity:0.06}
+.app-title{font-family:'Gaegu',cursive;font-size:2.4rem;color:#fff;letter-spacing:-1px;text-shadow:0 2px 16px rgba(255,107,107,0.5)}
+.app-title span{color:var(--accent)}
+.app-subtitle{font-size:0.75rem;color:rgba(255,255,255,0.5);font-weight:700;margin-top:4px;letter-spacing:1px;text-transform:uppercase}
+
+/* 게임 스타일 헤더 카드 */
+.progress-card{width:calc(100% - 32px);background:linear-gradient(135deg,#3d3d7a,#2C2C54);border-radius:0 0 20px 20px;padding:12px 18px;box-shadow:0 8px 24px rgba(44,44,84,0.3);margin:0 16px 20px;position:relative;overflow:hidden}
+.progress-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,0.05);border-radius:50%}
+.progress-card::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:rgba(255,255,255,0.04);border-radius:50%}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.progress-label{font-size:0.72rem;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase}
+.progress-level-badge{background:linear-gradient(135deg,var(--primary),#ff8e8e);color:#fff;font-family:'Gaegu',cursive;font-size:1.1rem;padding:3px 14px;border-radius:50px;font-weight:700;box-shadow:0 3px 8px rgba(255,107,107,0.4)}
+.progress-bar-bg{width:100%;height:7px;background:rgba(255,255,255,0.1);border-radius:50px;overflow:hidden;margin-bottom:8px}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:50px;transition:width 0.6s;box-shadow:0 0 10px rgba(255,107,107,0.5)}
+.progress-stats{display:flex;gap:12px;align-items:center}
+.progress-stat{display:flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:800;color:rgba(255,255,255,0.7)}
+.progress-stat span{font-size:0.85rem}
+
+/* 레벨 카드 슬라이더 */
+.level-slider-wrap{width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;padding:0 16px}
+.level-card-area{width:100%;display:flex;align-items:center;justify-content:center;gap:12px}
+.btn-level-nav{width:48px;height:48px;border-radius:50%;border:none;background:linear-gradient(135deg,#2C2C54,#3d3d7a);color:#fff;box-shadow:0 4px 16px rgba(44,44,84,0.3);font-size:1.1rem;cursor:pointer;flex-shrink:0;transition:all 0.15s;display:flex;align-items:center;justify-content:center}
+.btn-level-nav:active{transform:scale(0.88);box-shadow:0 2px 8px rgba(44,44,84,0.2)}
+.btn-level-nav:disabled{opacity:0.25;cursor:default}
+
+/* 레벨 카드 */
+.level-card{flex:1;max-width:280px;min-height:320px;border-radius:28px;padding:32px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:transform 0.3s,opacity 0.3s;position:relative;overflow:hidden}
+.level-card.locked{background:linear-gradient(135deg,#d0d0d0,#c0c0c0);box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.level-card.unlocked{background:linear-gradient(135deg,#fff,#f0fffe);border:3px solid var(--secondary);box-shadow:0 8px 28px rgba(78,205,196,0.25)}
+.level-card.current{background:linear-gradient(135deg,#2C2C54,#4a4a8a);box-shadow:0 12px 40px rgba(44,44,84,0.45)}
+.level-card.completed{background:linear-gradient(135deg,var(--secondary),#44c4b8);box-shadow:0 8px 28px rgba(78,205,196,0.35)}
+.level-card.current::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:rgba(255,107,107,0.2);border-radius:50%}
+.level-card.current::after{content:'';position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:rgba(78,205,196,0.15);border-radius:50%}
+.level-card.slide-left{animation:slideLeft 0.25s ease forwards}
+.level-card.slide-right{animation:slideRight 0.25s ease forwards}
+@keyframes slideLeft{0%{transform:translateX(60px);opacity:0}100%{transform:translateX(0);opacity:1}}
+@keyframes slideRight{0%{transform:translateX(-60px);opacity:0}100%{transform:translateX(0);opacity:1}}
+
+.lc-badge{font-size:0.72rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;border-radius:50px;margin-bottom:4px}
+.level-card.locked .lc-badge{background:rgba(0,0,0,0.1);color:#aaa}
+.level-card.unlocked .lc-badge{background:rgba(78,205,196,0.15);color:var(--secondary)}
+.level-card.current .lc-badge{background:rgba(255,255,255,0.25);color:#fff}
+.level-card.completed .lc-badge{background:rgba(255,255,255,0.25);color:#fff}
+
+.lc-num{font-family:'Gaegu',cursive;font-size:5rem;line-height:1;font-weight:700}
+.level-card.locked .lc-num{color:#bbb}
+.level-card.unlocked .lc-num{color:var(--dark)}
+.level-card.current .lc-num{color:#fff;text-shadow:0 0 30px rgba(255,107,107,0.8)}
+.level-card.completed .lc-num{color:#fff}
+
+.lc-icon{font-size:2.8rem}
+.lc-stars{font-size:1.6rem;letter-spacing:2px;min-height:32px}
+.lc-words{font-size:0.78rem;font-weight:700;opacity:0.7}
+.level-card.locked .lc-words{color:#aaa}
+.level-card.current .lc-words,.level-card.completed .lc-words{color:rgba(255,255,255,0.8)}
+
+.btn-enter-level{background:#fff;border:none;border-radius:50px;padding:12px 32px;font-family:'Nunito',sans-serif;font-weight:900;font-size:0.9rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.1);transition:all 0.15s;margin-top:8px}
+.level-card.current .btn-enter-level{color:var(--primary)}
+.level-card.completed .btn-enter-level{color:var(--secondary)}
+.btn-enter-level:active{transform:scale(0.95)}
+
+/* 레벨 도트 인디케이터 */
+.level-dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:300px}
+.level-dot{width:7px;height:7px;border-radius:50%;background:#e0e0e0;transition:all 0.3s;flex-shrink:0}
+.level-dot.done{background:var(--secondary)}
+.level-dot.active{background:var(--primary);width:20px;border-radius:4px}
+.level-dot.locked-dot{background:#e8e8e8}
 
 /* ===== 학습 화면 ===== */
 #studyScreen{width:100%;max-width:480px;display:none;flex-direction:column;align-items:center;padding-bottom:80px}
@@ -184,19 +249,33 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
 
 <div id="levelMapScreen">
   <div class="app-header">
-    <div class="app-title">영단어 <span>카드</span></div>
-    <div class="app-subtitle">레벨을 클리어하며 영단어를 마스터해요!</div>
-    <div class="progress-wrap" style="margin-top:12px">
-      <div class="progress-info">
-        <span>전체 진행률</span>
-        <span id="progressText">0 / 100 레벨</span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="mainProgressFill" style="width:0%"></div>
-      </div>
+    <div class="app-header-card">
+      <div class="app-title">영단어 <span>카드</span></div>
+      <div class="app-subtitle">Level up your English! 🚀</div>
     </div>
   </div>
-  <div class="level-grid" id="levelGrid"></div>
+  <div class="progress-card" style="width:auto">
+    <div class="progress-top">
+      <span class="progress-label">CURRENT LEVEL</span>
+      <div class="progress-level-badge" id="progressText">Lv. 1</div>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="mainProgressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-stats">
+      <div class="progress-stat"><span>⭐</span><span id="progressStars">0</span></div>
+      <div class="progress-stat"><span>🏆</span><span id="progressCleared">0 클리어</span></div>
+    </div>
+  </div>
+
+  <div class="level-slider-wrap">
+    <div class="level-card-area">
+      <button class="btn-level-nav" id="btnLevelPrev" onclick="slideLevel(-1)">◀</button>
+      <div class="level-card" id="levelCard"></div>
+      <button class="btn-level-nav" id="btnLevelNext" onclick="slideLevel(1)">▶</button>
+    </div>
+    <div class="level-dots" id="levelDots"></div>
+  </div>
 </div>
 
 <!-- ===== 학습 화면 ===== -->
@@ -211,10 +290,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
   </div>
 
   <div class="study-tabs">
-    <button class="study-tab active" id="tabSpeak" onclick="setStudyTab('speak')">
-      <span class="tab-icon">🗣️</span>말하기
-    </button>
-    <button class="study-tab" id="tabListen" onclick="setStudyTab('listen')">
+    <button class="study-tab active" id="tabListen" onclick="setStudyTab('listen')">
       <span class="tab-icon">🔊</span>듣기평가
     </button>
     <button class="study-tab" id="tabMeaning" onclick="setStudyTab('meaning')">
@@ -222,38 +298,18 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
     </button>
   </div>
 
-  <!-- 말하기 -->
-  <div class="speaking-area active" id="speakArea">
-    <div class="speaking-card">
-      <div class="speaking-label">한국어 뜻</div>
-      <div class="speaking-word" id="speakWord">-</div>
-    </div>
-    <div class="speaking-result" id="speakResult">🎤 버튼을 눌러 영어로 말해보세요</div>
-    <button class="btn-mic" id="speakMicBtn" onclick="toggleSpeak()">🎤</button>
-    <div class="compare-wrap" id="compareWrap">
-      <div style="font-size:0.8rem;font-weight:800;color:var(--dark);margin-bottom:4px">발음 비교</div>
-      <div class="compare-row">
-        <span class="compare-label">원어민</span>
-        <button class="btn-play-compare" onclick="playNative()">🔊 원어민 발음 듣기</button>
-      </div>
-      <div class="compare-row">
-        <span class="compare-label">내 발음</span>
-        <button class="btn-play-compare" onclick="playMyVoice()" id="myVoiceBtn" disabled>🎤 내 발음 듣기</button>
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <button class="btn-compare-toggle" id="compareToggleBtn" onclick="toggleCompare()" style="display:none">🔍 발음 비교</button>
-      <button class="btn-shuffle" onclick="shuffleSpeakCards()">🔀 섞기</button>
-    </div>
-    <div class="speaking-nav">
-      <button class="btn-nav" onclick="speakPrev()">←</button>
-      <div class="flip-counter"><span id="speakCur">1</span>/<span id="speakTotal">20</span></div>
-      <button class="btn-nav" onclick="speakNext()">→</button>
-    </div>
-  </div>
-
   <!-- 듣기평가 -->
   <div class="listening-area" id="listenArea">
+    <!-- 스타트 화면 -->
+    <div class="start-screen" id="listenStartScreen">
+      <div class="start-mode-icon">🔊</div>
+      <div class="start-mode-title">듣기평가</div>
+      <div class="start-mode-desc">영어 발음을 듣고<br>스펠링과 뜻을 동시에 맞춰보세요!</div>
+      <div class="start-word-count">레벨 단어 20개</div>
+      <button class="btn-start" onclick="startListen()">START ▶</button>
+    </div>
+    <!-- 문제 화면 -->
+    <div id="listenGameArea" style="width:100%;display:none;flex-direction:column;align-items:center;gap:12px">
     <button class="listen-play-btn" id="listenPlayBtn" onclick="playListenWord()">🔊</button>
     <div class="listen-hint">여러 번 들을 수 있어요</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:448px">
@@ -262,29 +318,28 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
     </div>
     <div class="listen-choices" id="listenChoices"></div>
     <div class="listen-result" id="listenResult"></div>
-    <div class="listen-nav">
-      <button class="btn-nav" onclick="listenPrev()">←</button>
-      <div class="flip-counter"><span id="listenCur">1</span>/<span id="listenTotal">20</span></div>
-      <button class="btn-nav" onclick="listenNext()">→</button>
-    </div>
+    </div><!-- listenGameArea 끝 -->
   </div>
 
   <!-- 뜻찾기 -->
   <div class="meaning-area" id="meaningArea">
-    <div class="meaning-dir-btns">
-      <button class="meaning-dir-btn active" id="dirEK" onclick="setMeaningDir('EK')">영어→뜻</button>
-      <button class="meaning-dir-btn" id="dirKE" onclick="setMeaningDir('KE')">뜻→영어</button>
+    <!-- 스타트 화면 -->
+    <div class="start-screen" id="meaningStartScreen">
+      <div class="start-mode-icon">🔍</div>
+      <div class="start-mode-title">뜻찾기</div>
+      <div class="start-mode-desc">영어 단어와 한국어 뜻이<br>무작위로 번갈아 나와요!</div>
+      <div class="start-word-count">레벨 단어 20개</div>
+      <button class="btn-start" onclick="startMeaning()">START ▶</button>
     </div>
+    <!-- 문제 화면 -->
+    <div id="meaningGameArea" style="width:100%;display:none;flex-direction:column;align-items:center;gap:12px">
     <div class="meaning-card">
       <div class="meaning-label" id="meaningLabel">ENGLISH</div>
       <div class="meaning-word" id="meaningWord">-</div>
     </div>
     <div class="meaning-choices" id="meaningChoices"></div>
-    <div class="meaning-nav">
-      <button class="btn-nav" onclick="meaningPrev()">←</button>
-      <div class="meaning-counter"><span id="meaningCur">1</span>/<span id="meaningTotal">20</span></div>
-      <button class="btn-nav" onclick="meaningNext()">→</button>
-    </div>
+    <div class="listen-result" id="meaningResult"></div>
+    </div><!-- meaningGameArea 끝 -->
   </div>
 </div>
 
@@ -294,12 +349,12 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
     <button class="btn-back" onclick="exitTest()">←</button>
     <div class="study-level-info">
       <div class="study-level-title" id="testLevelTitle">레벨 1 테스트</div>
-      <div class="study-level-sub">20문제</div>
+      <div class="study-level-sub">듣기 10 + 뜻찾기 10</div>
     </div>
   </div>
   <div class="test-progress-info">
-    <span id="testQNum">1 / 20</span>
-    <span id="testScore">0점</span>
+    <span id="testQNum">1 / 20 문제</span>
+    <span id="testScore">맞은 개수: 0</span>
   </div>
   <div class="test-progress-bg">
     <div class="test-progress-fill" id="testProgressFill" style="width:5%"></div>
@@ -338,6 +393,32 @@ let state = {
   levelStars: {},
   currentLevel: 1
 };
+
+// ===== 가중치 셔플 =====
+// wrongCount: {word: n} - 틀린 횟수 저장
+let wrongCount = {};
+
+function recordResult(word, correct) {
+  if (!correct) {
+    wrongCount[word] = (wrongCount[word] || 0) + 1;
+  } else {
+    // 맞추면 틀린 횟수 절반으로 감소
+    if (wrongCount[word]) wrongCount[word] = Math.max(0, wrongCount[word] - 1);
+  }
+}
+
+// 가중치 기반 다음 단어 선택
+// 틀린 횟수가 많을수록 더 자주 선택
+function weightedNext(words) {
+  const weights = words.map(w => 1 + (wrongCount[w.word] || 0) * 3);
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < words.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return i;
+  }
+  return words.length - 1;
+}
 let streak = 0;
 let streakTimer = null;
 
@@ -380,7 +461,16 @@ function shuffle(arr) {
   return a;
 }
 function getChoices(correct, level, field, count=3) {
-  const pool = getWordsUpTo(level).filter(w => w.word !== correct.word);
+  const correctAnswer = correct[field].toLowerCase();
+  const pool = getWordsUpTo(level).filter(w => {
+    if (w.word === correct.word) return false;
+    // 오답 보기에 정답 단어/뜻이 포함된 항목 제거
+    const val = w[field].toLowerCase();
+    if (val.includes(correctAnswer) || correctAnswer.includes(val)) return false;
+    // 뜻 안에 영어 단어가 괄호로 포함된 경우 제거 (예: "눈(snow)")
+    if (field === 'meaning' && w.meaning.toLowerCase().includes(correct.word.toLowerCase())) return false;
+    return true;
+  });
   const shuffled = shuffle(pool);
   const others = shuffled.slice(0, count-1).map(w => w[field]);
   const all = shuffle([correct[field], ...others]);
@@ -394,36 +484,86 @@ function speakText(text, lang='en-US') {
 }
 
 // ===== 레벨 맵 =====
+let mapLevel = 1; // 현재 보고 있는 레벨
+
 function renderLevelMap() {
-  const grid = document.getElementById('levelGrid');
   const completed = Object.keys(state.levelStars).length;
-  document.getElementById('progressText').textContent = `${completed} / 100 레벨`;
-  document.getElementById('mainProgressFill').style.width = completed + '%';
-  
-  grid.innerHTML = '';
-  for (let i=1; i<=TOTAL_LEVELS; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'level-btn';
-    const stars = state.levelStars[i];
-    const isUnlocked = i <= state.unlockedLevel;
-    const isCompleted = stars !== undefined;
-    const isCurrent = i === state.unlockedLevel && !isCompleted;
-    
-    if (!isUnlocked) {
-      btn.classList.add('locked');
-      btn.innerHTML = `<span class="lock-icon">🔒</span><span>${i}</span>`;
-    } else if (isCompleted) {
-      btn.classList.add('completed');
-      const starStr = '⭐'.repeat(stars);
-      btn.innerHTML = `<span class="level-num">${i}</span><span class="stars">${starStr}</span>`;
-      btn.onclick = () => enterLevel(i);
-    } else {
-      btn.classList.add(isCurrent ? 'current' : 'unlocked');
-      btn.innerHTML = `<span class="level-num">${i}</span>`;
-      btn.onclick = () => enterLevel(i);
-    }
-    grid.appendChild(btn);
+  const totalStars = Object.values(state.levelStars).reduce((a,b)=>a+b,0);
+  document.getElementById('progressText').textContent = `Lv. ${state.unlockedLevel}`;
+  document.getElementById('mainProgressFill').style.width = (state.unlockedLevel / TOTAL_LEVELS * 100) + '%';
+  document.getElementById('progressStars').textContent = totalStars;
+  document.getElementById('progressCleared').textContent = `${completed} 클리어`;
+
+  // 현재 보는 레벨을 최신 해제 레벨로 초기화
+  if (!mapLevel) mapLevel = state.unlockedLevel;
+
+  renderLevelCard(mapLevel, '');
+  renderLevelDots();
+  updateNavBtns();
+}
+
+function renderLevelCard(level, animClass) {
+  const card = document.getElementById('levelCard');
+  const stars = state.levelStars[level];
+  const isUnlocked = level <= state.unlockedLevel;
+  const isCompleted = stars !== undefined;
+  const isCurrent = level === state.unlockedLevel && !isCompleted;
+
+  let statusClass = !isUnlocked ? 'locked' : isCompleted ? 'completed' : isCurrent ? 'current' : 'unlocked';
+  let badge = !isUnlocked ? '🔒 LOCKED' : isCompleted ? '✅ CLEAR' : isCurrent ? '🎯 PLAYING' : '🔓 UNLOCKED';
+  let icon = !isUnlocked ? '🔒' : isCompleted ? '🏆' : isCurrent ? '🎮' : '📖';
+  let starStr = isCompleted ? '⭐'.repeat(stars) : (isUnlocked ? '' : '');
+  let wordCount = `단어 ${WORDS_PER_LEVEL}개`;
+
+  let btnHtml = '';
+  if (isUnlocked) {
+    btnHtml = `<button class="btn-enter-level" onclick="playClickSound();enterLevel(${level})">
+      ${isCurrent ? '▶ 시작하기' : '▶ 다시하기'}
+    </button>`;
   }
+
+  card.className = `level-card ${statusClass} ${animClass}`;
+  card.innerHTML = `
+    <div class="lc-badge">${badge}</div>
+    <div class="lc-num">Lv.${level}</div>
+    <div class="lc-icon">${icon}</div>
+    <div class="lc-stars">${starStr}</div>
+    <div class="lc-words">${wordCount}</div>
+    ${btnHtml}
+  `;
+}
+
+function slideLevel(dir) {
+  const next = mapLevel + dir;
+  if (next < 1 || next > TOTAL_LEVELS) return;
+  playClickSound();
+  const animClass = dir > 0 ? 'slide-left' : 'slide-right';
+  mapLevel = next;
+  renderLevelCard(mapLevel, animClass);
+  renderLevelDots();
+  updateNavBtns();
+}
+
+function renderLevelDots() {
+  const dotsEl = document.getElementById('levelDots');
+  dotsEl.innerHTML = '';
+  // 10개씩 묶어서 현재 그룹만 표시
+  const groupSize = 10;
+  const groupStart = Math.floor((mapLevel-1)/groupSize)*groupSize+1;
+  const groupEnd = Math.min(groupStart+groupSize-1, TOTAL_LEVELS);
+  for (let i = groupStart; i <= groupEnd; i++) {
+    const dot = document.createElement('div');
+    const isCompleted = state.levelStars[i] !== undefined;
+    const isActive = i === mapLevel;
+    const isUnlocked = i <= state.unlockedLevel;
+    dot.className = 'level-dot' + (isActive?' active':isCompleted?' done':!isUnlocked?' locked-dot':'');
+    dotsEl.appendChild(dot);
+  }
+}
+
+function updateNavBtns() {
+  document.getElementById('btnLevelPrev').disabled = mapLevel <= 1;
+  document.getElementById('btnLevelNext').disabled = mapLevel >= TOTAL_LEVELS;
 }
 
 // ===== 학습 화면 =====
@@ -433,15 +573,20 @@ let levelWords = [];
 function enterLevel(level) {
   currentLevel = level;
   levelWords = shuffle(getWords(level));
+  wrongCount = {};  // 레벨 바뀌면 오답 기록 초기화
+  listenWords = [];
+  meaningWords = [];
   document.getElementById('studyLevelTitle').textContent = `레벨 ${level}`;
   document.getElementById('studyLevelSub').textContent = `단어 ${levelWords.length}개`;
   document.getElementById('testLevelTitle').textContent = `레벨 ${level} 테스트`;
   
   showScreen('studyScreen');
-  setStudyTab('speak');
+  setStudyTab('listen');
+  showListenStart();
 }
 
 function goToMap() {
+  mapLevel = currentLevel;
   showScreen('levelMapScreen');
   renderLevelMap();
 }
@@ -454,14 +599,39 @@ function showScreen(id) {
 }
 
 function setStudyTab(tab) {
-  ['speak','listen','meaning'].forEach(t => {
+  ['listen','meaning'].forEach(t => {
     document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
     document.getElementById(t+'Area').classList.toggle('active', t===tab);
     document.getElementById(t+'Area').style.display = t===tab ? 'flex' : 'none';
   });
-  if (tab==='speak') renderSpeak();
-  if (tab==='listen') renderListen();
-  if (tab==='meaning') renderMeaning();
+  // 탭 전환 시 스타트 화면으로 돌아가기
+  if (tab==='listen') showListenStart();
+  if (tab==='meaning') showMeaningStart();
+}
+
+function showListenStart() {
+  document.getElementById('listenStartScreen').style.display = 'flex';
+  document.getElementById('listenGameArea').style.display = 'none';
+}
+function startListen() {
+  playClickSound();
+  document.getElementById('listenStartScreen').style.display = 'none';
+  document.getElementById('listenGameArea').style.display = 'flex';
+  listenWords = [...levelWords];
+  renderListen();
+}
+
+function showMeaningStart() {
+  document.getElementById('meaningStartScreen').style.display = 'flex';
+  document.getElementById('meaningGameArea').style.display = 'none';
+}
+function startMeaning() {
+  playClickSound();
+  document.getElementById('meaningStartScreen').style.display = 'none';
+  document.getElementById('meaningGameArea').style.display = 'flex';
+  meaningWords = [...levelWords];
+  meaningIndex = 0;
+  renderMeaning();
 }
 
 // ===== 말하기 =====
@@ -662,17 +832,18 @@ let listenWords = [];
 let listenSpellSelected = null;
 let listenMeanSelected = null;
 let listenAnswered = false;
+let listenCurrentWord = null;
 
 function renderListen() {
   if (!listenWords.length) listenWords = [...levelWords];
-  if (listenIndex >= listenWords.length) listenIndex = 0;
+  // 가중치 기반으로 다음 단어 선택
+  listenIndex = weightedNext(listenWords);
   const w = listenWords[listenIndex];
+  listenCurrentWord = w;
   listenSpellSelected = null;
   listenMeanSelected = null;
   listenAnswered = false;
   
-  document.getElementById('listenCur').textContent = listenIndex + 1;
-  document.getElementById('listenTotal').textContent = listenWords.length;
   document.getElementById('listenResult').textContent = '';
   document.getElementById('listenPlayBtn').classList.remove('playing');
   
@@ -726,6 +897,7 @@ function playListenWord() {
 
 function selectListenChoice(btn, type) {
   if (listenAnswered) return;
+  playClickSound();
   const container = document.getElementById('listenChoices');
   const col = type === 'spell' ? container.children[0] : container.children[1];
   col.querySelectorAll('.listen-choice-btn').forEach(b => b.classList.remove('selected'));
@@ -760,12 +932,11 @@ function submitListen() {
   document.getElementById('listenResult').textContent = allOk ? '✅ 완벽해요!' : spellOk ? '🔤 스펠링은 맞았어요!' : meanOk ? '📖 뜻은 맞았어요!' : '❌ 다시 도전해봐요!';
   document.getElementById('listenResult').style.color = allOk ? '#4CAF50' : '#f44336';
   if (allOk) addStreak(); else resetStreak();
+  recordResult(w.word, allOk);
   // 1.5초 후 자동으로 다음 문제
-  setTimeout(() => { listenIndex=(listenIndex+1)%listenWords.length; renderListen(); }, 1500);
+  setTimeout(() => renderListen(), 1500);
 }
 
-function listenNext() { listenIndex=(listenIndex+1)%listenWords.length; renderListen(); }
-function listenPrev() { listenIndex=(listenIndex-1+listenWords.length)%listenWords.length; renderListen(); }
 
 // ===== 뜻찾기 =====
 let meaningIndex = 0;
@@ -773,57 +944,56 @@ let meaningWords = [];
 let meaningDir = 'EK';
 let meaningAnswered = false;
 
-function setMeaningDir(dir) {
-  meaningDir = dir;
-  document.getElementById('dirEK').classList.toggle('active', dir==='EK');
-  document.getElementById('dirKE').classList.toggle('active', dir==='KE');
-  meaningIndex = 0;
-  renderMeaning();
-}
-
 function renderMeaning() {
   if (!meaningWords.length) meaningWords = [...levelWords];
-  if (meaningIndex >= meaningWords.length) meaningIndex = 0;
-  const w = meaningWords[meaningIndex];
+  // 가중치 기반으로 다음 단어 선택
+  const w = meaningWords[weightedNext(meaningWords)];
   meaningAnswered = false;
-  
+  const resultEl = document.getElementById('meaningResult');
+  if (resultEl) { resultEl.textContent = ''; }
+  // 방향 랜덤
+  meaningDir = Math.random() < 0.5 ? 'EK' : 'KE';
+
   document.getElementById('meaningLabel').textContent = meaningDir==='EK' ? 'ENGLISH' : '한국어 뜻';
   document.getElementById('meaningWord').textContent = meaningDir==='EK' ? w.word : w.meaning;
-  document.getElementById('meaningCur').textContent = meaningIndex + 1;
-  document.getElementById('meaningTotal').textContent = meaningWords.length;
-  
+
   const field = meaningDir==='EK' ? 'meaning' : 'word';
   const choices = getChoices(w, currentLevel, field, 3);
-  
+
   const container = document.getElementById('meaningChoices');
   container.innerHTML = '';
   choices.forEach(choice => {
     const btn = document.createElement('button');
     btn.className = 'meaning-choice-btn';
     btn.textContent = choice;
-    btn.onclick = () => selectMeaning(btn, choice, w[field]);
+    btn.onclick = () => selectMeaning(btn, choice, w[field], w);
     container.appendChild(btn);
   });
 }
 
-function selectMeaning(btn, choice, answer) {
+function selectMeaning(btn, choice, answer, w) {
   if (meaningAnswered) return;
+  playClickSound();
   meaningAnswered = true;
   const isCorrect = choice === answer;
-  
+
   document.querySelectorAll('.meaning-choice-btn').forEach(b => {
     if (b.textContent === answer) b.classList.add('correct');
     else if (b === btn && !isCorrect) b.classList.add('wrong');
   });
-  
-  if (isCorrect) { speakText(meaningWords[meaningIndex].word, 'en-US'); addStreak(); }
-  else resetStreak();
-  
-  setTimeout(() => { meaningIndex=(meaningIndex+1)%meaningWords.length; renderMeaning(); }, 1200);
-}
 
-function meaningNext() { meaningIndex=(meaningIndex+1)%meaningWords.length; renderMeaning(); }
-function meaningPrev() { meaningIndex=(meaningIndex-1+meaningWords.length)%meaningWords.length; renderMeaning(); }
+  const resultEl = document.getElementById('meaningResult');
+  if (resultEl) {
+    resultEl.textContent = isCorrect ? '✅ 정답!' : '❌ 틀렸어요!';
+    resultEl.style.color = isCorrect ? '#4CAF50' : '#f44336';
+  }
+
+  if (isCorrect) { speakText(w.word, 'en-US'); addStreak(); }
+  else resetStreak();
+  recordResult(w.word, isCorrect);
+
+  setTimeout(() => { meaningIndex++; renderMeaning(); }, 1200);
+}
 
 // ===== 테스트 =====
 let testQuestions = [];
@@ -840,12 +1010,10 @@ function startTest() {
   const words = shuffle(getWords(currentLevel));
   testQuestions = [];
   
-  // 말하기 7문제
-  shuffle([...words]).slice(0,7).forEach(w => testQuestions.push({type:'speaking', word:w}));
-  // 듣기평가 7문제
-  shuffle([...words]).slice(0,7).forEach(w => testQuestions.push({type:'listening', word:w}));
-  // 뜻찾기 6문제
-  shuffle([...words]).slice(0,6).forEach(w => testQuestions.push({type:'meaning', word:w}));
+  // 듣기평가 10문제
+  shuffle([...words]).slice(0,10).forEach(w => testQuestions.push({type:'listening', word:w}));
+  // 뜻찾기 10문제
+  shuffle([...words]).slice(0,10).forEach(w => testQuestions.push({type:'meaning', word:w}));
   
   testQuestions = shuffle(testQuestions);
   testCurrentQ = 0;
@@ -864,15 +1032,14 @@ function renderTestQuestion() {
   testSpellSel = null;
   testMeanSel = null;
   
-  document.getElementById('testQNum').textContent = `${testCurrentQ+1} / 20`;
-  document.getElementById('testScore').textContent = `${Math.round(testCorrect/testCurrentQ*100)||0}점`;
+  document.getElementById('testQNum').textContent = `${testCurrentQ+1} / 20 문제`;
+  document.getElementById('testScore').textContent = `맞은 개수: ${testCorrect}`;
   document.getElementById('testProgressFill').style.width = ((testCurrentQ+1)/20*100) + '%';
   
   const area = document.getElementById('testQuestionArea');
   area.innerHTML = '';
   
-  if (q.type === 'speaking') renderTestSpeaking(q.word, area);
-  else if (q.type === 'listening') renderTestListening(q.word, area);
+  if (q.type === 'listening') renderTestListening(q.word, area);
   else renderTestMeaning(q.word, area);
 }
 
@@ -928,7 +1095,7 @@ function toggleTestSpeak(answer, meaning) {
       document.getElementById('testSpeakResult').textContent = '❌ "' + said + '" → 정답: ' + answer;
       document.getElementById('testSpeakResult').style.color = '#f44336';
     }
-    document.getElementById('testScore').textContent = Math.round(testCorrect/(testCurrentQ+1)*100) + '점';
+    document.getElementById('testScore').textContent = '맞은 개수: ' + testCorrect;
     setTimeout(nextTestQuestion, 1500);
   };
   testRecognition.onspeechend = () => { testRecognition.stop(); };
@@ -1013,7 +1180,7 @@ function submitTestListen() {
   
   document.getElementById('testListenResult').textContent = allOk ? '✅ 완벽!' : '❌ 정답을 확인하세요';
   document.getElementById('testListenResult').style.color = allOk ? '#4CAF50' : '#f44336';
-  document.getElementById('testScore').textContent = `${Math.round(testCorrect/(testCurrentQ+1)*100)}점`;
+  document.getElementById('testScore').textContent = `맞은 개수: ${testCorrect}`;
   setTimeout(nextTestQuestion, 1500);
 }
 
@@ -1042,7 +1209,7 @@ function selectTestMeaning(btn, choice, answer) {
     if (b.textContent === answer) b.classList.add('correct');
     else if (b === btn && !correct) b.classList.add('wrong');
   });
-  document.getElementById('testScore').textContent = `${Math.round(testCorrect/(testCurrentQ+1)*100)}점`;
+  document.getElementById('testScore').textContent = `맞은 개수: ${testCorrect}`;
   setTimeout(nextTestQuestion, 1200);
 }
 
@@ -1100,6 +1267,36 @@ function retryTest() {
   showScreen('studyScreen');
   startTest();
 }
+
+// ===== 버튼 소리 =====
+let audioCtx = null;
+function playClickSound() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // 귀여운 팝 소리: 짧은 sine wave
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.15);
+  } catch(e) {}
+}
+
+// ===== 스와이프 지원 =====
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const screen = document.getElementById('levelMapScreen');
+  if (screen.style.display === 'none') return;
+  if (Math.abs(dx) > 50) slideLevel(dx < 0 ? 1 : -1);
+}, {passive:true});
 
 // ===== 초기화 =====
 loadState();
