@@ -17,7 +17,7 @@
 body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
 
 /* 스트릭 배지 */
-.streak-badge{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:linear-gradient(135deg,#FF6B6B,#ff8e8e);color:#fff;padding:10px 24px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;box-shadow:0 4px 20px rgba(255,107,107,0.4);z-index:999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.streak-badge{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-100px);background:linear-gradient(135deg,#FF6B6B,#ff8e8e);color:#fff;padding:10px 24px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;box-shadow:0 4px 20px rgba(255,107,107,0.4);z-index:9999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;white-space:nowrap}
 .streak-badge.show{transform:translateX(-50%) translateY(0)}
 
 /* ===== 레벨 맵 화면 ===== */
@@ -343,8 +343,8 @@ let streakTimer = null;
 
 function addStreak() {
   streak++;
+  const badge = document.getElementById('streakBadge');
   if (streak >= 2) {
-    const badge = document.getElementById('streakBadge');
     badge.textContent = '🔥 ' + streak + '연속 정답!';
     badge.classList.add('show');
     clearTimeout(streakTimer);
@@ -459,7 +459,6 @@ function setStudyTab(tab) {
     document.getElementById(t+'Area').classList.toggle('active', t===tab);
     document.getElementById(t+'Area').style.display = t===tab ? 'flex' : 'none';
   });
-  resetStreak();
   if (tab==='speak') renderSpeak();
   if (tab==='listen') renderListen();
   if (tab==='meaning') renderMeaning();
@@ -506,59 +505,129 @@ function speakPrev() {
   renderSpeak();
 }
 
-async function toggleSpeak() {
+function toggleSpeak() {
   if (isRecording) {
-    stopRecording();
+    // 녹음 중지
+    if (recognition) { try { recognition.stop(); } catch(e){} }
     return;
   }
+
   const w = speakWords[speakIndex];
   const btn = document.getElementById('speakMicBtn');
-  
-  if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SR();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    
-    isRecording = true;
-    btn.classList.add('recording');
-    btn.textContent = '⏹️';
-    document.getElementById('speakResult').textContent = '듣는 중...';
-    
-    // 동시에 녹음도
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-      mediaRecorder = new MediaRecorder(stream);
-      recordedChunks = [];
-      mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        recordedBlob = new Blob(recordedChunks, {type:'audio/webm'});
-        document.getElementById('myVoiceBtn').disabled = false;
-      };
-      mediaRecorder.start();
-    } catch(e) {}
-    
-    recognition.onresult = (e) => {
-      const said = e.results[0][0].transcript.toLowerCase().trim();
-      const answer = w.word.toLowerCase().trim();
-      stopRecording();
-      
-      if (said === answer || said.includes(answer) || answer.includes(said)) {
-        document.getElementById('speakResult').textContent = `✅ 정답! "${said}"`;
-        document.getElementById('speakResult').style.color = '#4CAF50';
-      } else {
-        document.getElementById('speakResult').textContent = `❌ "${said}" → 정답: ${w.word}`;
-        document.getElementById('speakResult').style.color = '#f44336';
-      }
-      document.getElementById('compareToggleBtn').style.display = 'block';
+
+  if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+    document.getElementById('speakResult').textContent = '이 브라우저는 음성인식을 지원하지 않아요 (크롬 사용 권장)';
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 5;
+
+  isRecording = true;
+  btn.classList.add('recording');
+  btn.textContent = '⏹️';
+  document.getElementById('speakResult').textContent = '🎤 말해보세요!';
+  document.getElementById('speakResult').style.color = '#FF6B6B';
+
+  recognition.onstart = () => {
+    // 음성인식 시작 확인 후 녹음 시작
+    startMyRecording();
+  };
+
+  recognition.onresult = (e) => {
+    // 여러 후보 중 가장 정확한 것
+    let said = '';
+    for (let i = 0; i < e.results[0].length; i++) {
+      const t = e.results[0][i].transcript.toLowerCase().trim();
+      if (!said) said = t;
+      if (t === w.word.toLowerCase() || t.includes(w.word.toLowerCase())) { said = t; break; }
+    }
+    const answer = w.word.toLowerCase().trim();
+    const correct = said === answer || said.includes(answer) || answer.includes(said)
+      || levenshtein(said.replace(/\s/g,''), answer.replace(/\s/g,'')) <= 2;
+
+    isRecording = false;
+    btn.classList.remove('recording');
+    btn.textContent = '🎤';
+    stopMyRecording();
+
+    if (correct) {
+      document.getElementById('speakResult').textContent = '✅ 정답! "' + said + '"';
+      document.getElementById('speakResult').style.color = '#4CAF50';
+      addStreak();
+    } else {
+      document.getElementById('speakResult').textContent = '❌ "' + said + '" → 정답: ' + w.word;
+      document.getElementById('speakResult').style.color = '#f44336';
+      resetStreak();
+    }
+    document.getElementById('compareToggleBtn').style.display = 'block';
+  };
+
+  recognition.onspeechend = () => {
+    try { recognition.stop(); } catch(e) {}
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    btn.classList.remove('recording');
+    btn.textContent = '🎤';
+    stopMyRecording();
+    // onresult가 없었으면 실패 메시지
+    const cur = document.getElementById('speakResult').textContent;
+    if (cur === '🎤 말해보세요!') {
+      document.getElementById('speakResult').textContent = '❓ 못 들었어요. 다시 눌러보세요';
+      document.getElementById('speakResult').style.color = '#aaa';
+    }
+  };
+
+  recognition.onerror = (e) => {
+    isRecording = false;
+    btn.classList.remove('recording');
+    btn.textContent = '🎤';
+    stopMyRecording();
+    const msgs = {
+      'not-allowed': '⚠️ 마이크 권한을 허용해주세요',
+      'no-speech':   '❓ 말소리를 못 들었어요. 다시 눌러보세요',
+      'network':     '⚠️ 네트워크 오류. 다시 시도해보세요',
+      'audio-capture': '⚠️ 마이크를 찾을 수 없어요'
     };
-    recognition.onerror = () => {
-      stopRecording();
-      document.getElementById('speakResult').textContent = '다시 시도해주세요';
-    };
+    document.getElementById('speakResult').textContent = msgs[e.error] || ('오류: ' + e.error);
+    document.getElementById('speakResult').style.color = '#f44336';
+  };
+
+  try {
     recognition.start();
-  } else {
-    document.getElementById('speakResult').textContent = '음성인식이 지원되지 않는 브라우저예요';
+  } catch(e) {
+    isRecording = false;
+    btn.classList.remove('recording');
+    btn.textContent = '🎤';
+    document.getElementById('speakResult').textContent = '❓ 다시 눌러보세요';
+  }
+}
+
+// 내 발음 녹음 (음성인식과 분리)
+async function startMyRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    mediaRecorder = new MediaRecorder(stream);
+    recordedChunks = [];
+    mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordedChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      recordedBlob = new Blob(recordedChunks, {type: 'audio/webm'});
+      document.getElementById('myVoiceBtn').disabled = false;
+      stream.getTracks().forEach(t => t.stop());
+    };
+    mediaRecorder.start();
+  } catch(e) {}
+}
+
+function stopMyRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    try { mediaRecorder.stop(); } catch(e) {}
   }
 }
 
@@ -567,8 +636,8 @@ function stopRecording() {
   const btn = document.getElementById('speakMicBtn');
   btn.classList.remove('recording');
   btn.textContent = '🎤';
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-  if (recognition) recognition.stop();
+  stopMyRecording();
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
 }
 
 function toggleCompare() {
@@ -605,7 +674,6 @@ function renderListen() {
   document.getElementById('listenCur').textContent = listenIndex + 1;
   document.getElementById('listenTotal').textContent = listenWords.length;
   document.getElementById('listenResult').textContent = '';
-  document.getElementById('listenSubmitBtn').classList.remove('show');
   document.getElementById('listenPlayBtn').classList.remove('playing');
   
   // 보기 생성
@@ -682,16 +750,18 @@ function submitListen() {
   const container = document.getElementById('listenChoices');
   container.children[0].querySelectorAll('.listen-choice-btn').forEach(b => {
     if (b.dataset.value === w.word) b.classList.add('correct');
-    else if (b.classList.contains('selected')) b.classList.add('wrong');
+    else if (b.classList.contains('selected') && b.dataset.value !== w.word) b.classList.add('wrong');
   });
   container.children[1].querySelectorAll('.listen-choice-btn').forEach(b => {
     if (b.dataset.value === w.meaning) b.classList.add('correct');
-    else if (b.classList.contains('selected')) b.classList.add('wrong');
+    else if (b.classList.contains('selected') && b.dataset.value !== w.meaning) b.classList.add('wrong');
   });
   
   document.getElementById('listenResult').textContent = allOk ? '✅ 완벽해요!' : spellOk ? '🔤 스펠링은 맞았어요!' : meanOk ? '📖 뜻은 맞았어요!' : '❌ 다시 도전해봐요!';
   document.getElementById('listenResult').style.color = allOk ? '#4CAF50' : '#f44336';
   if (allOk) addStreak(); else resetStreak();
+  // 1.5초 후 자동으로 다음 문제
+  setTimeout(() => { listenIndex=(listenIndex+1)%listenWords.length; renderListen(); }, 1500);
 }
 
 function listenNext() { listenIndex=(listenIndex+1)%listenWords.length; renderListen(); }
@@ -746,7 +816,8 @@ function selectMeaning(btn, choice, answer) {
     else if (b === btn && !isCorrect) b.classList.add('wrong');
   });
   
-  if (isCorrect) speakText(meaningWords[meaningIndex].word, 'en-US');
+  if (isCorrect) { speakText(meaningWords[meaningIndex].word, 'en-US'); addStreak(); }
+  else resetStreak();
   
   setTimeout(() => { meaningIndex=(meaningIndex+1)%meaningWords.length; renderMeaning(); }, 1200);
 }
