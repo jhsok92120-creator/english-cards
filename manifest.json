@@ -1,13 +1,13 @@
 {
   "name": "영단어 카드",
   "short_name": "영단어",
-  "description": "영어 단어 카드 플립 학습 앱",
+  "description": "영어 단어 카드 학습 앱",
   "start_url": "/english-cards/",
   "scope": "/english-cards/",
   "display": "standalone",
   "background_color": "#FFF8F0",
-  "theme_color": "#FF6B6B",
-  "orientation": "portrait-primary",
+  "theme_color": "#2C2C54",
+  "orientation": "any",
   "lang": "ko",
   "icons": [
     {
