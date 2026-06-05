@@ -286,7 +286,10 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
       <div class="study-level-title" id="studyLevelTitle">레벨 1</div>
       <div class="study-level-sub" id="studyLevelSub">단어 20개</div>
     </div>
-    <button class="btn-test-start" onclick="startTest()">📝 테스트</button>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+      <button class="btn-test-start" id="btnTestStart" onclick="startTest()" disabled style="opacity:0.4" title="듣기/뜻찾기 각 10개 이상 맞춰야 가능">📝 테스트</button>
+      <div id="studyProgress" style="font-size:0.65rem;font-weight:700;color:#aaa;text-align:right">🔊 0/10  🔍 0/10</div>
+    </div>
   </div>
 
   <div class="study-tabs">
@@ -393,6 +396,10 @@ let state = {
   levelStars: {},
   currentLevel: 1
 };
+// 레벨별 학습 정답 카운터
+let listenCorrect = 0;
+let meaningCorrect = 0;
+const TEST_UNLOCK_COUNT = 10; // 각 10개 이상 맞춰야 테스트 가능
 
 // ===== 가중치 셔플 =====
 // wrongCount: {word: n} - 틀린 횟수 저장
@@ -573,9 +580,12 @@ let levelWords = [];
 function enterLevel(level) {
   currentLevel = level;
   levelWords = shuffle(getWords(level));
-  wrongCount = {};  // 레벨 바뀌면 오답 기록 초기화
+  wrongCount = {};
   listenWords = [];
   meaningWords = [];
+  listenCorrect = 0;
+  meaningCorrect = 0;
+  updateTestBtn();
   document.getElementById('studyLevelTitle').textContent = `레벨 ${level}`;
   document.getElementById('studyLevelSub').textContent = `단어 ${levelWords.length}개`;
   document.getElementById('testLevelTitle').textContent = `레벨 ${level} 테스트`;
@@ -607,6 +617,27 @@ function setStudyTab(tab) {
   // 탭 전환 시 스타트 화면으로 돌아가기
   if (tab==='listen') showListenStart();
   if (tab==='meaning') showMeaningStart();
+}
+
+function updateTestBtn() {
+  const btn = document.getElementById('btnTestStart');
+  if (!btn) return;
+  const listenOk = listenCorrect >= TEST_UNLOCK_COUNT;
+  const meaningOk = meaningCorrect >= TEST_UNLOCK_COUNT;
+  const allOk = listenOk && meaningOk;
+  btn.disabled = !allOk;
+  btn.style.opacity = allOk ? '1' : '0.4';
+  btn.title = allOk ? '테스트 시작!' :
+    `듣기 ${listenCorrect}/${TEST_UNLOCK_COUNT} 뜻찾기 ${meaningCorrect}/${TEST_UNLOCK_COUNT} 달성 후 가능`;
+
+  // 학습 진행 표시
+  const progress = document.getElementById('studyProgress');
+  if (progress) {
+    const listenBar = listenOk ? '🔊✅' : `🔊 ${listenCorrect}/${TEST_UNLOCK_COUNT}`;
+    const meaningBar = meaningOk ? '🔍✅' : `🔍 ${meaningCorrect}/${TEST_UNLOCK_COUNT}`;
+    progress.textContent = listenBar + '  ' + meaningBar;
+    progress.style.color = allOk ? '#4CAF50' : '#aaa';
+  }
 }
 
 function showListenStart() {
@@ -931,9 +962,9 @@ function submitListen() {
   
   document.getElementById('listenResult').textContent = allOk ? '✅ 완벽해요!' : spellOk ? '🔤 스펠링은 맞았어요!' : meanOk ? '📖 뜻은 맞았어요!' : '❌ 다시 도전해봐요!';
   document.getElementById('listenResult').style.color = allOk ? '#4CAF50' : '#f44336';
-  if (allOk) addStreak(); else resetStreak();
+  if (allOk) { addStreak(); listenCorrect++; updateTestBtn(); }
+  else resetStreak();
   recordResult(w.word, allOk);
-  // 1.5초 후 자동으로 다음 문제
   setTimeout(() => renderListen(), 1500);
 }
 
@@ -988,7 +1019,7 @@ function selectMeaning(btn, choice, answer, w) {
     resultEl.style.color = isCorrect ? '#4CAF50' : '#f44336';
   }
 
-  if (isCorrect) { speakText(w.word, 'en-US'); addStreak(); }
+  if (isCorrect) { speakText(w.word, 'en-US'); addStreak(); meaningCorrect++; updateTestBtn(); }
   else resetStreak();
   recordResult(w.word, isCorrect);
 
