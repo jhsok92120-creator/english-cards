@@ -1,4 +1,4 @@
-const CACHE = 'vocab-v3';
+const CACHE = 'vocab-v4';
 const BASE = '/english-cards';
 const OFFLINE_URLS = [
   BASE + '/',
@@ -8,21 +8,19 @@ const OFFLINE_URLS = [
   BASE + '/icon-512.png',
 ];
 
-// 설치
+// 설치 - skipWaiting 제거 (localStorage 보호)
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(OFFLINE_URLS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then(c => c.addAll(OFFLINE_URLS))
   );
 });
 
-// 활성화 - 구버전 캐시 삭제
+// 활성화 - 구버전 캐시만 삭제, clients.claim 제거
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
   );
 });
 
@@ -40,8 +38,8 @@ self.addEventListener('fetch', e => {
         }
         return res;
       })
-      .catch(() => caches.match(e.request)
-        .then(cached => cached || caches.match(BASE + '/index.html'))
+      .catch(() =>
+        caches.match(e.request).then(cached => cached || caches.match(BASE + '/index.html'))
       )
   );
 });
