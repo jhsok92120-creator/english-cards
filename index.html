@@ -659,9 +659,13 @@ function setStudyTab(tab) {
 function updateTestBtn() {
   const btn = document.getElementById('btnTestStart');
   if (!btn) return;
+
+  // 이미 클리어한 레벨이면 바로 활성화
+  const alreadyCleared = state.levelStars[currentLevel] !== undefined;
   const listenOk = listenCorrect >= TEST_UNLOCK_COUNT;
   const meaningOk = meaningCorrect >= TEST_UNLOCK_COUNT;
-  const allOk = listenOk && meaningOk;
+  const allOk = alreadyCleared || (listenOk && meaningOk);
+
   btn.disabled = !allOk;
   btn.style.opacity = allOk ? '1' : '0.4';
   btn.title = allOk ? '테스트 시작!' :
@@ -670,10 +674,15 @@ function updateTestBtn() {
   // 학습 진행 표시
   const progress = document.getElementById('studyProgress');
   if (progress) {
-    const listenBar = listenOk ? '🔊✅' : `🔊 ${listenCorrect}/${TEST_UNLOCK_COUNT}`;
-    const meaningBar = meaningOk ? '🔍✅' : `🔍 ${meaningCorrect}/${TEST_UNLOCK_COUNT}`;
-    progress.textContent = listenBar + '  ' + meaningBar;
-    progress.style.color = allOk ? '#4CAF50' : '#aaa';
+    if (alreadyCleared) {
+      progress.textContent = '✅ 재도전 가능!';
+      progress.style.color = '#4CAF50';
+    } else {
+      const listenBar = listenOk ? '🔊✅' : `🔊 ${listenCorrect}/${TEST_UNLOCK_COUNT}`;
+      const meaningBar = meaningOk ? '🔍✅' : `🔍 ${meaningCorrect}/${TEST_UNLOCK_COUNT}`;
+      progress.textContent = listenBar + '  ' + meaningBar;
+      progress.style.color = allOk ? '#4CAF50' : '#aaa';
+    }
   }
 }
 
