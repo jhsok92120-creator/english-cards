@@ -293,12 +293,48 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;displ
   </div>
 
   <div class="study-tabs">
+    <button class="study-tab" id="tabFlip" onclick="setStudyTab('flip')">
+      <span class="tab-icon">🎴</span>카드플립
+    </button>
     <button class="study-tab active" id="tabListen" onclick="setStudyTab('listen')">
       <span class="tab-icon">🔊</span>듣기평가
     </button>
     <button class="study-tab" id="tabMeaning" onclick="setStudyTab('meaning')">
       <span class="tab-icon">🔍</span>뜻찾기
     </button>
+  </div>
+
+  <!-- 카드플립 -->
+  <div class="listening-area" id="flipArea" style="display:none">
+    <div class="start-screen" id="flipStartScreen">
+      <div class="start-mode-icon">🎴</div>
+      <div class="start-mode-title">카드플립</div>
+      <div class="start-mode-desc">영어 단어를 보고<br>탭하면 한국어 뜻이 나와요!</div>
+      <div class="start-word-count">레벨 단어 20개</div>
+      <button class="btn-start" onclick="startFlip()">START ▶</button>
+    </div>
+    <div id="flipGameArea" style="width:100%;display:none;flex-direction:column;align-items:center;gap:12px">
+      <div class="flip-card-wrap" id="flipCardWrap" onclick="flipCard()">
+        <div class="flip-card-inner" id="flipCardInner">
+          <div class="flip-card-front">
+            <div class="flip-sub">ENGLISH</div>
+            <div class="flip-word" id="flipWord">-</div>
+            <div class="flip-hint" id="flipHint">탭해서 뒤집어보세요</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="flip-sub" style="color:rgba(255,255,255,0.7)">한국어 뜻</div>
+            <div class="flip-answer" id="flipAnswer">-</div>
+            <div class="flip-answer-sub" id="flipAnswerSub">-</div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-nav">
+        <button class="btn-nav" onclick="flipPrev()">←</button>
+        <div class="flip-counter"><span id="flipCur">1</span>/<span id="flipTotal">20</span></div>
+        <button class="btn-nav" onclick="flipNext()">→</button>
+      </div>
+      <button class="btn-shuffle" onclick="shuffleFlip()">🔀 섞기</button>
+    </div>
   </div>
 
   <!-- 듣기평가 -->
@@ -609,12 +645,13 @@ function showScreen(id) {
 }
 
 function setStudyTab(tab) {
-  ['listen','meaning'].forEach(t => {
-    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
-    document.getElementById(t+'Area').classList.toggle('active', t===tab);
-    document.getElementById(t+'Area').style.display = t===tab ? 'flex' : 'none';
+  ['flip','listen','meaning'].forEach(t => {
+    const el = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el) el.classList.toggle('active', t===tab);
+    const area = document.getElementById(t+'Area');
+    if(area) { area.classList.toggle('active', t===tab); area.style.display = t===tab ? 'flex' : 'none'; }
   });
-  // 탭 전환 시 스타트 화면으로 돌아가기
+  if (tab==='flip') showFlipStart();
   if (tab==='listen') showListenStart();
   if (tab==='meaning') showMeaningStart();
 }
@@ -638,6 +675,75 @@ function updateTestBtn() {
     progress.textContent = listenBar + '  ' + meaningBar;
     progress.style.color = allOk ? '#4CAF50' : '#aaa';
   }
+}
+
+// ===== 카드플립 =====
+let flipIndex = 0;
+let flipWords = [];
+let flipFlipped = false;
+
+function showFlipStart() {
+  document.getElementById('flipStartScreen').style.display = 'flex';
+  document.getElementById('flipGameArea').style.display = 'none';
+}
+
+function startFlip() {
+  playClickSound();
+  document.getElementById('flipStartScreen').style.display = 'none';
+  document.getElementById('flipGameArea').style.display = 'flex';
+  flipWords = shuffle([...levelWords]);
+  flipIndex = 0;
+  renderFlipCard();
+}
+
+function renderFlipCard() {
+  if (!flipWords.length) return;
+  if (flipIndex >= flipWords.length) flipIndex = 0;
+  const w = flipWords[flipIndex];
+  flipFlipped = false;
+
+  // 카드 앞면으로 리셋
+  const inner = document.getElementById('flipCardInner');
+  inner.style.transition = 'none';
+  document.getElementById('flipCardWrap').classList.remove('flipped');
+  inner.getBoundingClientRect();
+  inner.style.transition = '';
+
+  document.getElementById('flipWord').textContent = w.word;
+  document.getElementById('flipAnswer').textContent = w.meaning;
+  document.getElementById('flipAnswerSub').textContent = w.word;
+  document.getElementById('flipCur').textContent = flipIndex + 1;
+  document.getElementById('flipTotal').textContent = flipWords.length;
+  const hint = document.getElementById('flipHint');
+  if (hint) hint.textContent = '탭해서 뒤집어보세요';
+}
+
+function flipCard() {
+  if (flipFlipped) {
+    // 뒤집힌 상태에서 탭 → 다음 단어
+    flipNext();
+    return;
+  }
+  flipFlipped = true;
+  document.getElementById('flipCardWrap').classList.add('flipped');
+  const w = flipWords[flipIndex];
+  speakText(w.word, 'en-US');
+}
+
+function flipNext() {
+  flipIndex = (flipIndex + 1) % flipWords.length;
+  renderFlipCard();
+}
+
+function flipPrev() {
+  flipIndex = (flipIndex - 1 + flipWords.length) % flipWords.length;
+  renderFlipCard();
+}
+
+function shuffleFlip() {
+  flipWords = shuffle([...levelWords]);
+  flipIndex = 0;
+  renderFlipCard();
 }
 
 function showListenStart() {
