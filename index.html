@@ -537,8 +537,8 @@ function renderLevelMap() {
   document.getElementById('progressStars').textContent = totalStars;
   document.getElementById('progressCleared').textContent = `${completed} 클리어`;
 
-  // 현재 보는 레벨을 최신 해제 레벨로 초기화
-  if (!mapLevel) mapLevel = state.unlockedLevel;
+  // 항상 현재 진행중인 레벨로 이동
+  mapLevel = state.unlockedLevel;
 
   renderLevelCard(mapLevel, '');
   renderLevelDots();
